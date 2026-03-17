@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   web:
@@ -7,8 +5,9 @@ services:
     container_name: shopping_app
     ports:
       - "5001:5001"
-    env_file:
-      - .env
+    environment:
+      SECRET_KEY: supersecretkey123
+      DATABASE_URL=postgresql://postgres:password@flask-postgres-db.c03m026we7u0.us-east-1.rds.amazonaws.com:5432/market_db
     depends_on:
       - db
 
