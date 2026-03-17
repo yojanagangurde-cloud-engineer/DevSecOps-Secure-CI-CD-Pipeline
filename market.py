@@ -153,7 +153,7 @@ def login_page():
             <div style="text-align:center; margin-top:300px; font-family:sans-serif;">
                 <h2>Welcome Back, {{ name }}!</h2>
                 <p>You have successfully logged in.</p>
-                <a href="{{ redirect_url }}">Continue to place order</a><br>
+                <a href="{{ redirect_url }}">Continue to shop</a><br>
                 <a href="{{ url_for('home_page') }}">Go to Home</a>
             </div>
             """, name=name, redirect_url=redirect_url)
