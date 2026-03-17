@@ -5,6 +5,10 @@ from models import db, User, Product, Order
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+secret_key = os.getenv("SECRET_KEY")
+if not secret_key:
+    raise RuntimeError("SECRET_KEY environment variable not set!")
+app.secret_key = secret_key
 database_url = os.getenv("DATABASE_URL")
 if not database_url:
     raise RuntimeError("DATABASE_URL environment variable not set!")

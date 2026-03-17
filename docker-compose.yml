@@ -5,24 +5,5 @@ services:
     container_name: shopping_app
     ports:
       - "5001:5001"
-    environment:
-      SECRET_KEY: supersecretkey123
-      DATABASE_URL=postgresql://postgres:password@flask-postgres-db.c03m026we7u0.us-east-1.rds.amazonaws.com:5432/market_db
-    depends_on:
-      - db
-
-  db:
-    image: postgres:15
-    container_name: postgres_db
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: market_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+    env_file:
+      - .env
