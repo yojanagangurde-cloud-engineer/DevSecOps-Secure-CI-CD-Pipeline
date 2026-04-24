@@ -3,4 +3,4 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-CMD ["gunicorn", "--bind", "0.0.0.0:5001", "market:app", "--workers", "3"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "app:app", "--workers", "3"]
