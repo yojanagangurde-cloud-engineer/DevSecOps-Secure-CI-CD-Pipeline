@@ -47,3 +47,4 @@ jobs:
       with:
         target: http://localhost:5001
         cmd_options: '-a'
+        allow_issue_writing: false
