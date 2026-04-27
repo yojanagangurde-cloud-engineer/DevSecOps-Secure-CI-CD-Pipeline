@@ -31,6 +31,8 @@ jobs:
     - name: Wait
       run: sleep 10
 
+    - name: Fix workspace permissions
+      run: chmod -R 777 ${{ github.workspace }}
     - name: Run ZAP scan
       uses: zaproxy/action-baseline@v0.10.0
       with:
