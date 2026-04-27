@@ -31,7 +31,10 @@ jobs:
     - name: Wait
       run: sleep 10
 
+    - name: Fix permissions
+      run: chmod -R 777 .
     - name: Run ZAP scan
       uses: zaproxy/action-baseline@v0.10.0
       with:
         target: http://localhost:5001
+
