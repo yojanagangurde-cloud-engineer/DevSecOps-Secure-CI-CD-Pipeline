@@ -11,6 +11,7 @@ jobs:
     permissions:
       issues: write
       contents: read
+      actions: write
 
     steps:
     - uses: actions/checkout@v4
@@ -48,12 +49,13 @@ jobs:
         target: http://localhost:5001
         cmd_options: '-a'
         artifact_name: zap-scan-report
+        allow_issue_writing: false
 
 
     - name: Upload ZAP Report
       uses: actions/upload-artifact@v4
       with:
-        name: zap-scan-report
+        name: zap-report
         path: |
           report_html.html
           report_json.json
