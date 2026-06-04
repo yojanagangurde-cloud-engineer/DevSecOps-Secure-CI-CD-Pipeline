@@ -29,7 +29,7 @@ jobs:
     - name: Run Bandit Security Scan
       run: |
         pip install bandit
-        bandit -r flask-app/--exit-zero
+        bandit -r flask-app/ --exit-zero
 
     - name: Build Docker image
       run: docker build -t flask-app ./flask-app
@@ -51,18 +51,30 @@ jobs:
     - name: Run Flask Container
       run: |
         docker build -t flask-app ./flask-app
-        docker run -d -p 5001:5001 --name flask-app flask-app
+        docker run -d \
+          -p 5001:5001 \
+          --name flask-app \
+          -e SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+          -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+          flask-app
 
     - name: Wait for app
       run: sleep 10
 
-    - name: Check running containers
-      run: docker ps
+    - name: Show container status
+      run: docker ps -a
+
+    - name: Show container logs
+      run: docker logs flask-app || true
+
+    - name: Test application
+      run: |
+        curl http://127.0.0.1:5001 || true
 
     - name: OWASP ZAP scan
       uses: zaproxy/action-baseline@v0.12.0
       with:
-        target:target: "http://host.docker.internal:5001"
+        target: "http://host.docker.internal:5001"
         cmd_options: '-a'
         artifact_name: zap-scan-report
         allow_issue_writing: false
