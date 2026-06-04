@@ -48,10 +48,18 @@ jobs:
     - name: Scan Terraform
       run: checkov -d terraform/
 
-    - name: Run ZAP scan
+    - name: Run Flask App
+      run: |
+        docker build -t flask-app ./flask-app
+        docker run -d -p 5001:5001 --name flask flask-app
+
+    - name: Wait for app
+      run: sleep 10
+
+    - name: OWASP ZAP scan
       uses: zaproxy/action-baseline@v0.12.0
       with:
-        target: http://localhost:5001
+        target: "http://127.0.0.1:5001"
         cmd_options: '-a'
         artifact_name: zap-scan-report
         allow_issue_writing: false
