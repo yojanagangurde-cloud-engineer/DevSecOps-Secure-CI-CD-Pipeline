@@ -24,12 +24,12 @@ jobs:
         python-version: "3.9"
 
     - name: Install requirements
-      run: pip install -r requirements.txt
+      run: pip install -r flask-app/requirements.txt
 
     - name: Run Bandit Security Scan
       run: |
         pip install bandit
-        bandit -r app/
+        bandit -r flask-app/
 
     - name: Build Docker image
       run: docker build -t flask-app ./flask-app
