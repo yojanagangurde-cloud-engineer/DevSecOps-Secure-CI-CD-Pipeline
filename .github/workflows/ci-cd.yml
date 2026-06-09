@@ -5,36 +5,44 @@ on:
     branches: ["main"]
 
 jobs:
-  security:
+  security-and-deploy:
     runs-on: ubuntu-latest
 
-    permissions:
-      issues: write
-      contents: read
-      actions: write
+permissions:
+  contents: read
+  issues: write
+  actions: write
 
-    steps:
+steps:
 
-    - name: Checkout Repo
+# Checkout Repository
+    - name: Checkout Code
       uses: actions/checkout@v4
 
+# setup Python
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.9"
 
-    - name: Install requirements
-      run: pip install -r flask-app/requirements.txt
+# Install dependencies
+    - name: Install Requirements
+      run: |
+        pip install -r flask-app/requirements.txt
 
-    - name: Run Bandit Security Scan
+# Run Bandit Scan
+    - name: Run Bandit Scan
       run: |
         pip install bandit
         bandit -r flask-app/ --exit-zero
 
-    - name: Build Docker image
-      run: docker build -t flask-app ./flask-app
+# Build Docker Image
+    - name: Build Docker Image
+      run: |
+        docker build -t flask-app ./flask-app
 
-    - name: Run Trivy scan
+# Run Trivy Scan
+    - name: Run Trivy Scan
       uses: aquasecurity/trivy-action@master
       with:
         image-ref: flask-app
@@ -42,19 +50,71 @@ jobs:
         format: table
         exit-code: 0
 
+# Install Checkov
     - name: Install Checkov
-      run: pip install checkov
-
-    - name: Scan Terraform
-      run: checkov -d terraform/
-
-    - name: Run Flask Container
       run: |
-        docker build -t flask-app ./flask-app
-        docker run -d \
-          -p 5001:5001 \
-          --name flask-app \
-          -e SECRET_KEY="${{ secrets.SECRET_KEY }}" \
-          -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-          flask-app
+        pip install checkov
 
+# Run Checkov Scan on Terraform
+    - name: Run Checkov Scan
+      run: |
+        checkov -d terraform/
+
+# Login to Docker Hub
+    - name: Login Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+# Build and Push Docker Image
+    - name: Build and Push Image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./flask-app
+        push: true
+        platforms: linux/amd64
+        tags: yojana20/flask-shop:latest
+
+# Deploy to EC2
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+      script: |
+
+        docker stop flask-app || true
+        docker rm flask-app || true
+
+        docker pull yojana20/flask-shop:latest
+
+        docker run -d \
+        --name flask-app \
+        -p 5001:5001 \
+        -e SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+        -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+        yojana20/flask-shop:latest
+
+# Wait for Application to be Ready
+    - name: Wait for Application startup
+      run: sleep 30
+
+
+# OWASP ZAP Scan
+    - name: OWASP ZAP Baseline Scan
+      uses: zaproxy/action-baseline@v0.12.0
+      with:
+        target: "http://${{ secrets.EC2_HOST }}:5001"
+        cmd_options: "-a"
+
+# Upload ZAP Report
+    - name: Upload ZAP Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: zap-report
+        path: |
+          zap_report.html
+          zap_report.json
+          Zap_report.md
