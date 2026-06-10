@@ -25,22 +25,20 @@ resource "aws_security_group" "flask_sg" {
   }
 
   ingress {
-    description = "SSH"
-
+    description = "SSH Access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-
     cidr_blocks = ["71.236.247.47/32"]
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+ egress {
+  description = "Allow HTTPS outbound"
+  from_port   = 443
+  to_port     = 443
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+}
 
   tags = {
     Name = "DevSecOps-SecurityGroup"
@@ -64,7 +62,7 @@ data "aws_ami" "amazon_linux" {
 
 resource "aws_instance" "flask_server" {
 
-  ami           = data.aws_ami.amazon_linux.id
+  ami = data.aws_ami.amazon_linux.id
   instance_type = var.instance_type
 
   key_name = var.key_name
@@ -73,6 +71,18 @@ resource "aws_instance" "flask_server" {
     aws_security_group.flask_sg.id
   ]
 
+  ebs_optimized = true
+  monitoring  = true
+
+  root_block_device {
+    encrypted = true
+  }
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens = "required"
+    http_put_response_hop_limit = 2
+  }
   tags = {
     Name = "DevSecOps-Flask-Server"
   }
