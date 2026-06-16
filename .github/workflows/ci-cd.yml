@@ -91,7 +91,7 @@ jobs:
             docker pull yojana20/flask-shop:latest
 
             docker rm -f flask-app || true
-            
+
             docker run -d \
               --name flask-app \
               -p 5001:5001 \
@@ -102,7 +102,9 @@ jobs:
 
 # Wait for Application to be Ready
       - name: Wait for Application startup
-        run: sleep 30
+        run: |
+          sleep 40
+          curl -f http://${{ secrets.EC2_HOST }}:5001 || exit 1
 
 
 # OWASP ZAP Scan
