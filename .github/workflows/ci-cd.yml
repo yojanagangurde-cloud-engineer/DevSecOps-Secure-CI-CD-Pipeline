@@ -90,9 +90,12 @@ jobs:
 
             docker pull yojana20/flask-shop:latest
 
+            docker rm -f flask-app || true
+            
             docker run -d \
               --name flask-app \
               -p 5001:5001 \
+              --user root \
               -e SECRET_KEY="${{ secrets.SECRET_KEY }}" \
               -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
               yojana20/flask-shop:latest
