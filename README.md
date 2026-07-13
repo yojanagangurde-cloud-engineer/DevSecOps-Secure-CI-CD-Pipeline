@@ -14,6 +14,7 @@ The application is containerized using Docker and automatically deployed to AWS 
 
 ## Project Architecture
 
+![DevSecOps Secure CI/CD Pipeline](architecture/architecture.png)
 
 ## Tech Stack
 
